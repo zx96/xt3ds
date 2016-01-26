@@ -1,7 +1,7 @@
 #include <3ds.h>
 #include <stdbool.h>
 #include <string.h> //memcpy
-#include "gfx.h"
+#include "gfx2d.h"
 
 typedef enum { EMPTY, X, O } cellState;
 

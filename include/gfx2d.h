@@ -1,5 +1,5 @@
-#ifndef GFX_H
-#define GFX_H
+#ifndef GFX2D_H
+#define GFX2D_H
 
 #include <3ds.h>
 #include <stdbool.h>

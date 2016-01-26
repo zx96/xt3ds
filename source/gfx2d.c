@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <string.h> //memset
-#include "gfx.h"
+#include "gfx2d.h"
 #include "minlib.h"
 
 screen getScreen(gfxScreen_t scr)
