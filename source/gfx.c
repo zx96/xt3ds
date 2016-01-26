@@ -1,15 +1,19 @@
 #include <math.h>
 #include <stdbool.h>
+#include <string.h> //memset
 #include "gfx.h"
 #include "minlib.h"
-
-#define	RGBA(hex)	(color){(u8)hex,(u8)hex>>8,(u8)hex>>16,(u8)hex>>24}
 
 screen getScreen(gfxScreen_t scr)
 {
 	screen s;
 	s.fb = gfxGetFramebuffer(scr, GFX_LEFT, &(s.h), &(s.w));
 	return s;
+}
+
+void clearScreen(screen scr)
+{
+	memset(scr.fb, 0, 3*scr.w *scr.h);
 }
 
 bool isInBounds(screen scr, u16 x, u16 y) {

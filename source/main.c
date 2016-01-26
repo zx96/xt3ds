@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
 	//Blank the screens
 	screen scrTop = getScreen(GFX_TOP);
 	screen scrBot = getScreen(GFX_BOTTOM);
-	memset(scrTop.fb, 0, 3 * scrTop.w * scrTop.h);
-	memset(scrBot.fb, 0, 3 * scrBot.w * scrBot.h);
+	clearScreen(scrTop);
+	clearScreen(scrBot);
 
 	//Reset the game state
 	memset(gameBoard, EMPTY, 81);
@@ -80,19 +80,22 @@ int main(int argc, char *argv[])
 
 	while (aptMainLoop())
 	{
+		scrTop = getScreen(GFX_TOP);
+		scrBot = getScreen(GFX_BOTTOM);
+		memset(scrTop.fb, 0, 3 * scrTop.w * scrTop.h);
+		memset(scrBot.fb, 0, 3 * scrBot.w * scrBot.h);
+		
 		hidScanInput();
 		u32 kDown = hidKeysDown();
 
 		if (kDown & KEY_START) break;
 
-		renderBoard(scrBot, gameBoard, (color){0x3f, 0x48, 0xcc, 0xff}, 
-				(color){0x23, 0x2b, 0x83, 0xff}, 
-				(color){0xff, 0xff, 0xff, 0xff}, 
-				(color){0xff, 0xff, 0xff, 0xff});
+		renderBoard(scrBot, gameBoard, RGBA(0x3f48ccff), RGBA(0x232b83ff), 
+				WHITE, WHITE);
 
 		gfxFlushBuffers();
 		gfxSwapBuffers();
-		gspWaitForEvent(GSPGPU_EVENT_VBlank0, true);
+		gspWaitForVBlank();
 	}
 	
 	gfxExit();
