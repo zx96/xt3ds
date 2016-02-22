@@ -2,47 +2,58 @@
 #include <stdbool.h>
 #include <string.h> //memcpy
 #include "gfx2d.h"
+#include "o_rgba.h"
+#include "x_rgba.h"
 
 typedef enum { EMPTY, X, O } cellState;
 
-void renderBoard(screen, cellState[3][3][3][3], color, color, color, color);
-void renderSubgrid(screen, cellState[3][3], u8, u8, color, color, color);
-void renderZoomedSubgrid(screen, cellState[3][3], color, color, color);
+void renderBoard(screen, cellState[3][3][3][3], color, color, color, u32 *, u32 *);
+void renderSubgrid(screen, cellState[3][3], color, u32 *, u32 *);
+void renderZoomedSubgrid(screen, cellState[3][3], color, u32 *, u32 *);
+void renderLargeGrid(screen, color);
 void renderGridVLine(screen, u16, color);
 void renderGridHLine(screen, u16, color);
 
 void renderBoard(screen scr, cellState gameBoard[3][3][3][3], 
-		color gridColor, color subgridColor, color xColor, color oColor)
+		color gridColor, color subgridColor, color activeSubgridColor, 
+		u32* xBitmap, u32* oBitmap)
 {
 	//Draw the grid
-	u16 col = (0.5*scr.w) - 37;
-	renderGridVLine(scr, col, gridColor);
-	col += 73;
-	renderGridVLine(scr, col, gridColor);
-	renderGridHLine(scr, 83, gridColor);
-	renderGridHLine(scr, 156, gridColor);
+	renderLargeGrid(scr, gridColor);
 	
 	//Draw the subgrids
 	for (u8 i = 0; i < 3; i++)
 	{
 		for (u8 j = 0; j < 3; j++)
 		{
-			renderSubgrid(scr, gameBoard[i][j], i, j, subgridColor,
-					xColor, oColor);
+			renderSubgrid(scr, gameBoard[i][j], subgridColor,
+					xBitmap, oBitmap);
 		}
 	}
 }
 
-void renderSubgrid(screen scr, cellState subgrid[3][3], u8 row, u8 col, 
-		color gridColor, color xColor, color oColor)
+//Render the subgrid (58x58 px) in the center of the appropriate area
+void renderSubgrid(screen scr, cellState subgrid[3][3], 
+		color gridColor, u32 *xBitmap, u32 *oBitmap)
 {
-
+	
 }
 
 void renderZoomedSubgrid(screen scr, cellState subgrid[3][3],
-		color gridColor, color xColor, color oColor)
+		color gridColor, u32 *xBitmap, u32 *oBitmap)
 {
+	renderLargeGrid(scr, gridColor);
+}
 
+//Render a large (216x216 px) grid in the center of the screen
+void renderLargeGrid(screen scr, color gridColor)
+{
+	u16 col = (0.5*scr.w) - 37;
+	renderGridVLine(scr, col, gridColor);
+	col += 73;
+	renderGridVLine(scr, col, gridColor);
+	renderGridHLine(scr, 83, gridColor);
+	renderGridHLine(scr, 156, gridColor);
 }
 
 void renderGridVLine(screen scr, u16 col, color clr)
@@ -65,14 +76,9 @@ int main(int argc, char *argv[])
 {
 	cellState gameBoard[3][3][3][3];
 	u8 player;
+	screen scrTop, scrBot;
 
 	gfxInitDefault();
-
-	//Blank the screens
-	screen scrTop = getScreen(GFX_TOP);
-	screen scrBot = getScreen(GFX_BOTTOM);
-	clearScreen(scrTop);
-	clearScreen(scrBot);
 
 	//Reset the game state
 	memset(gameBoard, EMPTY, 81);
@@ -80,18 +86,22 @@ int main(int argc, char *argv[])
 
 	while (aptMainLoop())
 	{
+		//Clear the screens
 		scrTop = getScreen(GFX_TOP);
 		scrBot = getScreen(GFX_BOTTOM);
-		memset(scrTop.fb, 0, 3 * scrTop.w * scrTop.h);
-		memset(scrBot.fb, 0, 3 * scrBot.w * scrBot.h);
+		clearScreen(scrTop);
+		clearScreen(scrBot);
 		
+		//Check keypresses
 		hidScanInput();
 		u32 kDown = hidKeysDown();
 
 		if (kDown & KEY_START) break;
 
-		renderBoard(scrBot, gameBoard, RGBA(0x3f48ccff), RGBA(0x232b83ff), 
-				WHITE, WHITE);
+		//Render the main board
+		renderBoard(scrTop, gameBoard, RGBA(0x3f48ccff), RGBA(0x232b83ff), 
+				WHITE, NULL, NULL);
+		renderZoomedSubgrid(scrBot, gameBoard[0][0], WHITE, NULL, NULL);
 
 		gfxFlushBuffers();
 		gfxSwapBuffers();
